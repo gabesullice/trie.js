@@ -47,17 +47,24 @@ var Trie = (function () {
     },
 
     filter: function (character, index) {
-      var remainingChildren = {};
+      var childCount, remainingChildren;
+      remainingChildren = {};
 
-      if (index - 1 == this.depth) {
+      if (index != undefined && index - 1 == this.depth) {
         if (this.children.hasOwnProperty(character)) {
           remainingChildren[character] = this.children[character];
         }
       } else {
         for (var key in this.children) {
           if (this.children[key] instanceof Trie) {
+            if (index == undefined && this.children[key].root == character) {
+              continue;
+            }
+
             this.children[key].filter(character, index);
-            if (Object.keys(this.children[key].children).length > 0) {
+
+            childCount = Object.keys(this.children[key].children).length;
+            if (childCount > 0 || this.children[key].isLeaf) {
               remainingChildren[key] = this.children[key];
             }
           }
@@ -108,6 +115,23 @@ var Trie = (function () {
       this.children = remainingChildren;
 
       return this;
+    },
+
+    possibilities: function () {
+      var possibles = [];
+
+      for (var key in this.children) {
+        if (this.children[key] instanceof Trie) {
+          if (this.children[key].isLeaf) {
+            possibles.push(this.root + this.children[key].root);
+          }
+          else {
+            possibles.concat(this.children[key].possibilities());
+          }
+        }
+      }
+
+      return possibles;
     }
   };
 
