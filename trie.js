@@ -91,21 +91,15 @@ var Trie = (function () {
       return null;
     },
 
-    possibilities: function () {
-      var possibles = [];
+    characterCount: function (count) {
+      var count = (count != undefined) ? count : {};
 
-      for (var key in this.children) {
-        if (this.children[key] instanceof Trie) {
-          if (this.children[key].isLeaf) {
-            possibles.push(this.root + this.children[key].root);
-          }
-          else {
-            possibles.concat(this.children[key].possibilities());
-          }
-        }
-      }
+      this.each(function (child, key, children) {
+        count[key] = (count[key] !== undefined) ? count[key] + 1 : 1;
+        child.characterCount(count);
+      });
 
-      return possibles;
+      return count;
     }
   };
 
