@@ -18,9 +18,8 @@ var Trie = (function () {
 
     each: function (callback) {
       for (var key in this.children) {
-        if (this.children[key] instanceof Trie) {
-          callback(this.children[key], key, this.children);
-        }
+        var child = this.children[key];
+        if (child instanceof Trie) callback(child, key, this.children);
       }
     },
 
@@ -66,18 +65,11 @@ var Trie = (function () {
           return null;
         }
       } else {
-        this.each(function (child) {
-          if (keep = child.strain(character, index)) {
-            remaining[keep.root] = keep;
-          }
+        this.each(function (child, key, children) {
+          if (!(children[key] = child.filter(character, index))) delete children[key];
         });
 
-        if (Object.keys(remaining).length || this.isLeaf) {
-          this.children = remaining;
-          return this;
-        } else {
-          return null;
-        }
+        return (Object.keys(this.children).length || this.isLeaf) ? this : null;
       }
     },
 
@@ -89,15 +81,11 @@ var Trie = (function () {
         this.children = {};
         return this;
       } else if (this.depth < maxDepth) {
-        this.each(function (child) {
-          if (keep = child.prune(maxDepth)) {
-            remaining[keep.root] = keep;
-          }
+        this.each(function (child, key, children) {
+          if (!(children[key] = child.prune(maxDepth))) delete children[key];
         });
-        if (Object.keys(remaining).length || this.isLeaf) {
-          this.children = remaining;
-          return this;
-        }
+
+        return (Object.keys(this.children).length || this.isLeaf) ? this : null;
       }
 
       return null;
