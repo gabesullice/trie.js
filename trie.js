@@ -111,6 +111,3 @@ var Trie = (function () {
 
   return Trie;
 })();
-
-trie = new Trie();
-trie.build(words);
