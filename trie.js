@@ -54,33 +54,31 @@ var Trie = (function () {
     },
 
     filter: function (character, index) {
-      var childCount, remainingChildren;
-      remainingChildren = {};
+      var keep, remaining;
+      remaining = {};
 
-      if (index != undefined && index - 1 == this.depth) {
-        if (this.children.hasOwnProperty(character)) {
-          remainingChildren[character] = this.children[character];
+      if (index === undefined && this.root == character) {
+        return null;
+      } else if (index !== undefined && this.depth == index) {
+        if (this.root == character) {
+          return this;
+        } else {
+          return null;
         }
       } else {
-        for (var key in this.children) {
-          if (this.children[key] instanceof Trie) {
-            if (index == undefined && this.children[key].root == character) {
-              continue;
-            }
-
-            this.children[key].filter(character, index);
-
-            childCount = Object.keys(this.children[key].children).length;
-            if (childCount > 0 || this.children[key].isLeaf) {
-              remainingChildren[key] = this.children[key];
-            }
+        this.each(function (child) {
+          if (keep = child.strain(character, index)) {
+            remaining[keep.root] = keep;
           }
+        });
+
+        if (Object.keys(remaining).length || this.isLeaf) {
+          this.children = remaining;
+          return this;
+        } else {
+          return null;
         }
       }
-
-      this.children = remainingChildren;
-
-      return this;
     },
 
     prune: function (maxDepth) {
