@@ -16,9 +16,16 @@ var Trie = (function () {
       return this;
     },
 
+    each: function (callback) {
+      for (var key in this.children) {
+        if (this.children[key] instanceof Trie) {
+          callback(this.children[key], key, this.children);
+        }
+      }
+    },
+
     markAsLeaf: function () {
       this.isLeaf = true;
-
       return this;
     },
 
@@ -77,44 +84,25 @@ var Trie = (function () {
     },
 
     prune: function (maxDepth) {
-      var childCount, remainingChildren;
-      remainingChildren = {};
+      var keep, remaining;
+      remaining = {};
 
-
-      if (maxDepth - 2 == this.depth) {
-        for (var key in this.children) {
-          this.children[key].prune(maxDepth);
-
-          childCount = Object.keys(this.children[key].children).length;
-          if (childCount > 0 || this.children[key].isLeaf) {
-            remainingChildren[key] = this.children[key];
+      if (this.depth == maxDepth && this.isLeaf) {
+        this.children = {};
+        return this;
+      } else if (this.depth < maxDepth) {
+        this.each(function (child) {
+          if (keep = child.prune(maxDepth)) {
+            remaining[keep.root] = keep;
           }
-        }
-      }
-      else if (maxDepth - 1 == this.depth) {
-        for (var key in this.children) {
-          if (this.children[key] instanceof Trie && this.children[key].isLeaf) {
-            remainingChildren[key] = this.children[key];
-            remainingChildren[key].children = {};
-          }
-        }
-      }
-      else if (maxDepth - 1 > this.depth) {
-        for (var key in this.children) {
-          if (this.children[key] instanceof Trie) {
-            this.children[key].prune(maxDepth);
-
-            childCount = Object.keys(this.children[key]).length;
-            if (childCount > 0 || this.children[key].isLeaf) {
-              remainingChildren[key] = this.children[key];
-            }
-          }
+        });
+        if (Object.keys(remaining).length || this.isLeaf) {
+          this.children = remaining;
+          return this;
         }
       }
 
-      this.children = remainingChildren;
-
-      return this;
+      return null;
     },
 
     possibilities: function () {
