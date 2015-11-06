@@ -52,43 +52,41 @@ var Trie = (function () {
       return this;
     },
 
-    filter: function (character, index) {
-      var keep, remaining;
-      remaining = {};
+    filter: function (character, indices) {
+      indices = (indices === undefined) ? [] : indices;
 
-      if (index === undefined && this.root == character) {
-        return null;
-      } else if (index !== undefined && this.depth == index) {
-        if (this.root == character) {
-          return this;
-        } else {
-          return null;
-        }
-      } else {
-        this.each(function (child, key, children) {
-          if (!(children[key] = child.filter(character, index))) delete children[key];
-        });
+      if ((indices.indexOf(this.depth) === -1) === (this.root == character)) return null;
 
-        return (Object.keys(this.children).length || this.isLeaf) ? this : null;
-      }
+      this.each(function (child, key, children) {
+        if (!(children[key] = child.filter(character, indices))) delete children[key];
+      });
+
+      return (Object.keys(this.children).length || this.isLeaf) ? this : null;
     },
 
-    prune: function (maxDepth) {
-      var keep, remaining;
-      remaining = {};
+    prune: function (depth) {
+      if (this.isLeaf && this.depth < depth) this.isLeaf = false;
+      if (this.isLeaf && this.depth == depth) return this.clip();
+      if (this.depth > depth) return null;
 
-      if (this.depth == maxDepth && this.isLeaf) {
-        this.children = {};
-        return this;
-      } else if (this.depth < maxDepth) {
-        this.each(function (child, key, children) {
-          if (!(children[key] = child.prune(maxDepth))) delete children[key];
-        });
+      this.each(function (child, key, children) {
+        if (!(children[key] = child.prune(depth))) delete children[key];
+      });
 
-        return (Object.keys(this.children).length || this.isLeaf) ? this : null;
-      }
+      return (Object.keys(this.children).length) ? this : null;
+    },
 
-      return null;
+    clip: function () {
+      this.children = {};
+      return this;
+    },
+
+    leafCount: function () {
+      var count = 0;
+      this.each(function (child, key, children) {
+        count += child.leafCount();
+      });
+      return (this.isLeaf) ? count + 1 : count;
     },
 
     characterCount: function (count) {
