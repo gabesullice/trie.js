@@ -43,3 +43,13 @@ myTrie.filter("a", [1]);
 var newCount = myTrie.characterCount(); // returns {"a": 2, "b": 2, "r": 1, "z": 1}
 ````
 `characterCount` returns a sum of every occurence of every character that exists in the trie.
+
+#### `leafCount()`
+````javascript
+var myTrie = new Trie().build(["foo", "bar", "baz"]);
+var counts = myTrie.characterCount(); // returns 3
+
+myTrie.filter("o", [1,2]);
+var newCount = myTrie.characterCount(); // returns 1
+````
+`leafCount` returns the total count of every possible complete word in the trie.
